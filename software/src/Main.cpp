@@ -113,6 +113,8 @@ void setup() {
   delay(50);
   Serial.begin(9600);
 
+  Entropy.Initialize();
+
 #if defined(__IMXRT1062__)
   if (CrashReport) {
     while (!Serial && millis() < 3000) ; // wait

@@ -96,8 +96,8 @@ public:
     }
 
     void Start() {
-        reg[0] = random(0xFFFFFFFF);
-        reg[1] = random(0xFFFFFFFF);
+        reg[0] = Entropy.random(0xFFFFFFFF);
+        reg[1] = Entropy.random(0xFFFFFFFF);
         qselect[0] = io_offset;
         qselect[1] = io_offset + 1;
     }
@@ -174,7 +174,7 @@ public:
         // Advance the register on clock, flipping bits as necessary
         if (clk) {
           // If the cursor is not on the p value, and Digital 2 is not gated, the sequence remains the same
-          int prob = (cursor == PROB || (!reset_active && Gate(1))) ? p_mod : 0;
+          uint8_t prob = (cursor == PROB || (!reset_active && Gate(1))) ? p_mod : 0;
 
           if (rotate_right)
             ShiftRight(prob);
@@ -411,8 +411,8 @@ private:
     int qselect_mod[2];
     int length = 16; // Sequence length
     int len_mod; // actual length after CV mod
-    int p = 0; // Probability of bit flipping on each cycle
-    int p_mod;
+    uint8_t p = 0; // Probability of bit flipping on each cycle
+    uint8_t p_mod;
     int range = 24;
     int range_mod;
     int smoothing = 0;
@@ -430,25 +430,25 @@ private:
         old_val = (old_val * (s - 1) + new_val) / s;
     }
 
-    void ShiftLeft(int prob) {
+    void ShiftLeft(uint8_t prob) {
       ForEachChannel(i) {
         // Grab the bit that's about to be shifted away
         uint32_t last = (reg[i] >> (len_mod - 1)) & 0x01;
 
         // Does it change?
-        if (random(0, 99) < prob) last = 1 - last;
+        if (Entropy.random(0, 99) < prob) last = 1 - last;
 
         // Shift left, then potentially add the bit from the other side
         reg[i] = (reg[i] << 1) + last;
       }
     }
-    void ShiftRight(int prob) {
+    void ShiftRight(uint8_t prob) {
       ForEachChannel(i) {
         // Grab the bit that's about to be shifted away
         uint32_t last = reg[i] & 0x01;
 
         // Does it change?
-        if (random(0, 99) < prob) last = 1 - last;
+        if (Entropy.random(0, 99) < prob) last = 1 - last;
         last = last << (len_mod - 1);
 
         // Shift right, then potentially add the bit from the other side

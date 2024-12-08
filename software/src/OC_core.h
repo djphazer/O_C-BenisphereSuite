@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include <stdint.h>
+#include <Entropy.h>
+
 #include "OC_config.h"
 #include "OC_strings.h"
 #include "OC_ui.h"
