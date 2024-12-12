@@ -35,7 +35,7 @@ public:
     const uint8_t* applet_icon() { return PhzIcons::sequenceX; }
 
     void Start() {
-        Randomize();
+        Randomize(true);
     }
 
     void Reset() {
@@ -43,17 +43,20 @@ public:
         reset = true;
     }
 
-    void Randomize() {
-        for (int s = 0; s < SEQX_STEPS; s++) note[s] = random(SEQX_MIN_VALUE, SEQX_MAX_VALUE);
+    void Randomize(bool unipolar = false) {
+      const int minval = unipolar? 0 : -SEQX_MIN_VALUE;
+      for (int s = 0; s < SEQX_STEPS; s++) {
+        note[s] = random(SEQX_MAX_VALUE + minval) - minval;
+      }
     }
 
     void Controller() {
-        if (In(1) > (24 << 7) ) // 24 semitones == 2V
+        if (abs(In(1)) > (24 << 7) ) // 24 semitones == 2V
         {
             // new random sequence if CV2 goes high
             if (!cv2_gate) {
                 cv2_gate = 1;
-                Randomize();
+                Randomize(In(1) > 0);
             }
         }
         else cv2_gate = 0;
