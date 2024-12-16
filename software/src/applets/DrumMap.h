@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "HSUtils.h"
 #ifdef DRUMMAP_GRIDS2
 #include "../grids2_resources.h"
 #else
@@ -323,34 +324,44 @@ private:
         // chaos
         gfxPrint(1,45,"CHAOS");
         DrawSlider(32,45,28,_chaos, MAX_VAL, cursor == 6);
-        
-        // step count in header
-        gfxPrint((step < 9 ? 51 : 45),2,step+1);
 
         // cursor for non-knobs
         if (cursor <= 1)
             gfxCursor(14+cursor*31,23,16); // Part A / B
         
         // display value for knobs
-        if (value_animation > 0 && cursor >= 2 && cursor <= 6) {
-          int val = *VALUE_MAP[cursor-2];
-          int xPos = 27;
-          if (val > 99) {
-            xPos = 21;
-          } else if (val > 9) {
-            xPos = 24;
-          }
-          gfxPrint(xPos, 55, val);
-          gfxInvert(1, 54, 63, 10);
-        } else {
+        if (cursor == 7) {
           // cv input assignment
           gfxIcon(1,57,CV_ICON);
           gfxPrint(10,55,CV_MODE_NAMES[cv_mode]);
-          if (cursor == 7) gfxCursor(10,63,50); // CV Assign
+          gfxCursor(10,63,50); // CV Assign
+        } else {
+            ForEachChannel(ch) {
+                DrawTracks(55 + 5 * ch, ch);
+            }
         }
-
+        if (value_animation > 0 && cursor >= 2 && cursor <= 6) {
+          int val = *VALUE_MAP[cursor-2];
+          int xPos = 23;
+          int w = 3 * 6 + 1;
+          int h = 10;
+          gfxRect(xPos, 0, w, h);
+          gfxInvert(xPos, 0, w, h);
+          gfxPos(xPos, 1);
+          graphics.printf("%3d", val);
+          gfxInvert(xPos, 0, w, h);
+        }
     }
 
+    void DrawTracks(int y, int ch) {
+        uint8_t part = (ch == 1 && mode[ch] == 3) ? mode[0] : mode[ch];
+        for (int i=0; i < 32; i++) {
+            int level = ReadDrumMap((step + i) % 32, part, _x, _y);
+            int h = level >> 6;
+            if (level > 0) h++;
+            gfxRect(2 * i, y + 4 - h, 2, h);
+        }
+    }
     void Reset() {
         step = 0;
     }
