@@ -445,11 +445,13 @@ public:
     }
 
     void gfxHeader(const char *str, const uint8_t *icon = nullptr) {
-      int x = 4;
+      int x = 2;
       if (icon) {
-        gfxIcon(x-3, 2, icon);
-        x += 6;
+        gfxIcon(x-1, 2, icon);
+        x += 8;
       }
+      if (hemisphere & 1) // right side
+        x = 62 - strlen(str) * 6;
       gfxPrint(x, 2, str);
       gfxDottedLine(0, 10, 62, 10);
     }
