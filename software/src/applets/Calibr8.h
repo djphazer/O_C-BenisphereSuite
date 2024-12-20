@@ -95,15 +95,15 @@ public:
         default: break;
         }
     }
-        
+
     uint64_t OnDataRequest() {
         uint64_t data = 0;
-        Pack(data, PackLocation { 0,10}, scale_factor[0] + 500); 
-        Pack(data, PackLocation {10,10}, scale_factor[1] + 500); 
-        Pack(data, PackLocation {20, 8}, offset[0] + 100); 
-        Pack(data, PackLocation {28, 8}, offset[1] + 100); 
-        Pack(data, PackLocation {36, 7}, transpose[0] + 36); 
-        Pack(data, PackLocation {43, 7}, transpose[1] + 36); 
+        Pack(data, PackLocation { 0,10}, scale_factor[0] + 500);
+        Pack(data, PackLocation {10,10}, scale_factor[1] + 500);
+        Pack(data, PackLocation {20, 8}, offset[0] + 100);
+        Pack(data, PackLocation {28, 8}, offset[1] + 100);
+        Pack(data, PackLocation {36, 7}, transpose[0] + 36);
+        Pack(data, PackLocation {43, 7}, transpose[1] + 36);
         return data;
     }
 
@@ -137,10 +137,11 @@ private:
     int offset[2] = {0,0}; // fine-tuning offset
     int transpose[2] = {0,0}; // in semitones
     int transpose_active[2] = {0,0}; // held value while waiting for trigger
-    
+
     void DrawInterface() {
+        int y_shift = 27;
         ForEachChannel(ch) {
-            int y = 14 + ch*21;
+            int y = 14 + (ch * y_shift);
             gfxPrint(0, y, OutputLabel(ch));
 
             int whole = (scale_factor[ch] + CAL8_PRECISION) / 100;
@@ -158,15 +159,21 @@ private:
             gfxIcon(32, y, UP_DOWN_ICON);
             gfxPrint(40, y, offset[ch]);
         }
-        gfxLine(0, 33, 63, 33); // gotta keep em separated
+        gfxLine(0, 38, 63, 38); // gotta keep em separated
 
         bool ch = (cursor > OFFSET_A);
         int param = (cursor % 3);
         if (param == 0) // Scaling
-            gfxCursor(12, 22 + ch*21, 40);
+            gfxCursor(12, 22 + (ch * y_shift), 40);
         else // Transpose or Fine Tune
-            gfxCursor(8 + (param-1)*32, 32 + ch*21, 20);
+            gfxCursor(8 + (param-1)*32, 32 + (ch * y_shift), 20);
 
-        gfxSkyline();
+        ForEachChannel(ch) {
+            int length = ProportionCV(In(ch), 61);
+            gfxFrame(1, 36 + (ch * y_shift), length, 1);
+
+            length = ProportionCV(ViewOut(ch), 61);
+            gfxFrame(1, 33 + (ch * y_shift), length, 2);
+        }
     }
 };
