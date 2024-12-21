@@ -1,4 +1,5 @@
 // Copyright (c) 2023, Nicholas J. Michalek
+// GUI updates copyright (C) 2024, Beau Sterling
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -139,9 +140,9 @@ private:
     int transpose_active[2] = {0,0}; // held value while waiting for trigger
 
     void DrawInterface() {
-        int y_shift = 27;
+        int y_shift = 27; // B+D section y offset
         ForEachChannel(ch) {
-            int y = 14 + (ch * y_shift);
+            int y = 13 + (ch * y_shift);
             gfxPrint(0, y, OutputLabel(ch));
 
             int whole = (scale_factor[ch] + CAL8_PRECISION) / 100;
@@ -159,21 +160,34 @@ private:
             gfxIcon(32, y, UP_DOWN_ICON);
             gfxPrint(40, y, offset[ch]);
         }
-        gfxLine(0, 38, 63, 38); // gotta keep em separated
 
         bool ch = (cursor > OFFSET_A);
         int param = (cursor % 3);
         if (param == 0) // Scaling
-            gfxCursor(12, 22 + (ch * y_shift), 40);
+            gfxCursor(12, 21 + (ch * y_shift), 40);
         else // Transpose or Fine Tune
-            gfxCursor(8 + (param-1)*32, 32 + (ch * y_shift), 20);
+            gfxCursor(8 + (param-1)*32, 31 + (ch * y_shift), 20);
 
+        // resize cv meter bars at the bottom of each section:
         ForEachChannel(ch) {
-            int length = ProportionCV(In(ch), 61);
-            gfxFrame(1, 36 + (ch * y_shift), length, 1);
+            int length;
+            int max_length = 60; // max transpose value from above
+            int out_bar_y = 33 + (ch * y_shift);
+            int in_bar_y = 36 + (ch * y_shift);
 
-            length = ProportionCV(ViewOut(ch), 61);
-            gfxFrame(1, 33 + (ch * y_shift), length, 2);
+            // positve values extend bars from left side of screen to the right
+            // negative values go from right side to left
+            length = ProportionCV(abs(In(ch)), max_length);
+            if (In(ch) < 0)
+                gfxFrame(max_length - length, in_bar_y, length, 1);
+            else
+                gfxFrame(1, in_bar_y, length, 1);
+
+            length = ProportionCV(abs(ViewOut(ch)), max_length);
+            if (ViewOut(ch) < 0)
+                gfxFrame(max_length - length, out_bar_y, length, 2);
+            else
+                gfxFrame(1, out_bar_y, length, 2);
         }
     }
 };
