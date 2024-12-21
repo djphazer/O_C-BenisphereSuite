@@ -172,8 +172,8 @@ private:
         ForEachChannel(ch) {
             int length;
             int max_length = 60; // max transpose value from above
-            int out_bar_y = 33 + (ch * y_shift);
-            int in_bar_y = 36 + (ch * y_shift);
+            int in_bar_y = 33 + (ch * y_shift);
+            int out_bar_y = 35 + (ch * y_shift);
 
             // positve values extend bars from left side of screen to the right
             // negative values go from right side to left
