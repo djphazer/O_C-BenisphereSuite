@@ -55,6 +55,7 @@ public:
     };
 
     uint16_t tempo; // The set tempo, for display somewhere else
+    uint16_t tempo_setting;
     uint32_t ticks_per_beat; // Based on the selected tempo in BPM
     bool running = 0; // Specifies whether the clock is running for interprocess communication
     bool paused = 0; // Specifies whethr the clock is paused
@@ -69,6 +70,7 @@ public:
     int16_t tocks_per_beat[NR_OF_CLOCKS] = {0,0, 0,0, 0,0, 0,0, MIDI_OUT_PPQN}; // Multiplier
     int count[NR_OF_CLOCKS] = {0,0,0,0, 0,0,0,0, 0}; // Multiple counter, 0 is a special case when first starting the clock
     int8_t shuffle = 0; // 0 to 100
+    int8_t shuffle_setting = 0;
 
     int clock_ppqn = 4; // external clock multiple
     bool cycle = 0; // Alternates for each tock, for display purposes
@@ -101,7 +103,7 @@ public:
     void SetTempoBPM(uint16_t bpm) {
         bpm = constrain(bpm, CLOCK_TEMPO_MIN, CLOCK_TEMPO_MAX);
         ticks_per_beat = 1000000 / bpm;
-        tempo = bpm;
+        tempo_setting = tempo = bpm;
     }
     
     void SetTempoFromTaps(uint32_t *taps, int count) {
@@ -113,26 +115,30 @@ public:
         // update the tempo
         uint32_t clock_diff = total / count;
         ticks_per_beat = constrain(clock_diff, CLOCK_TICKS_MIN, CLOCK_TICKS_MAX); // time since last clock is new tempo
-        tempo = 1000000 / ticks_per_beat; // imprecise, for display purposes
+        tempo_setting = tempo = 1000000 / ticks_per_beat; // imprecise, for display purposes
     }
 
     int GetMultiply(int ch = 0) {return tocks_per_beat[ch];}
     int GetClockPPQN() { return clock_ppqn; }
 
-    void SetShuffle(int8_t sh_) { shuffle = constrain(sh_, 0, 99); }
-    int8_t GetShuffle() { return shuffle; }
+    void SetShuffle(int8_t sh_) { shuffle_setting = shuffle = constrain(sh_, 0, 99); }
+    int8_t GetShuffle() { return shuffle_setting; }
 
     /* Gets the current tempo. This can be used between client processes, like two different
      * hemispheres.
      */
-    uint16_t GetTempo() {return tempo;}
+    uint16_t GetTempo() {return tempo_setting;}
+    float GetTempoFloat() {
+      return 1000000.0f / ticks_per_beat;
+    }
 
     void BeatSync(void (*func)()) {
       sync_func = func;
     }
     void ProcessBeatSync() {
-      // TODO: things that should only happen on the downbeat
+      // Things that should only happen on the downbeat
       // such as: preset load, multiplier change, etc...
+      // TODO: form a queue
       if (sync_func != nullptr) {
         sync_func();
         sync_func = nullptr;
@@ -227,7 +233,7 @@ public:
 
                 // update the tempo
                 ticks_per_beat = constrain(clock_ppqn * avg_diff, CLOCK_TICKS_MIN, CLOCK_TICKS_MAX);
-                tempo = 1000000 / ticks_per_beat; // imprecise, for display purposes
+                tempo_setting = tempo = 1000000 / ticks_per_beat; // imprecise, for display purposes
 
                 int ticks_per_clock = ticks_per_beat / clock_ppqn; // rounded down
 
@@ -288,6 +294,12 @@ public:
     }
 
     void Pause() {paused = 1;}
+
+    void Modulate(int tempo_diff, int shuffle_diff) {
+      shuffle = constrain(shuffle_setting + shuffle_diff, 0, 99);
+      tempo = constrain(tempo_setting + tempo_diff, CLOCK_TEMPO_MIN, CLOCK_TEMPO_MAX);
+      ticks_per_beat = 1000000 / tempo;
+    }
 
     bool IsRunning() {return (running && !paused);}
 

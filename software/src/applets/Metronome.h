@@ -33,11 +33,16 @@ public:
         // Metronome is selected
         Clock(0);
 
+        // CV inputs modulate Tempo and Swing amount
+        HS::clock_m.Modulate(SemitoneIn(0), SemitoneIn(1));
+
         // Outputs
         if (HS::clock_m.IsRunning()) {
             if (HS::clock_m.Tock(hemisphere*2)) {
-                ClockOut(0);
-                if (HS::clock_m.EndOfBeat(hemisphere)) ClockOut(1);
+              ClockOut(0);
+            }
+            if (HS::clock_m.EndOfBeat(hemisphere) || HS::clock_m.Tock(hemisphere*2 + 1)) {
+              ClockOut(1);
             }
         }
     }
@@ -64,8 +69,8 @@ protected:
     //                    "-------" <-- Label size guide
     help[HELP_DIGITAL1] = "";
     help[HELP_DIGITAL2] = "";
-    help[HELP_CV1]      = "";
-    help[HELP_CV2]      = "";
+    help[HELP_CV1]      = "Tempo";
+    help[HELP_CV2]      = "Swing";
     help[HELP_OUT1]     = "Mult";
     help[HELP_OUT2]     = "Beat";
     help[HELP_EXTRA1] = "Set: Tempo";
@@ -77,9 +82,14 @@ private:
     void DrawInterface() {
         gfxIcon(1, 15, NOTE4_ICON);
         gfxPrint(9, 15, "= ");
-        gfxPrint(pad(100, HS::clock_m.GetTempo()), clock_m.GetTempo());
+        gfxPrint(pad(100, HS::clock_m.tempo), HS::clock_m.tempo);
         gfxPrint(" BPM");
 
+        gfxPrint(46, 25, HS::clock_m.shuffle);
+        gfxPrint("%");
+
+        gfxPrint(1, 55, "x");
+        gfxPrint(HS::clock_m.GetMultiply(hemisphere*2));
         DrawMetronome();
     }
 
