@@ -77,7 +77,7 @@ enum HELP_SECTIONS {
   HEMISPHERE_HELP_ENCODER  = HELP_EXTRA1,
 };
 
-static constexpr uint32_t HEMISPHERE_SIM_CLICK_TIME = 1000;
+static constexpr uint32_t MENU_ANIMATION_TIME = 2500; // approx 150ms
 static constexpr uint32_t HEMISPHERE_DOUBLE_CLICK_TIME = 8000;
 static constexpr uint32_t HEMISPHERE_PULSE_ANIMATION_TIME = 500;
 static constexpr uint32_t HEMISPHERE_PULSE_ANIMATION_TIME_LONG = 1200;

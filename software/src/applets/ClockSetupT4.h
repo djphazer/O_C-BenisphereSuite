@@ -23,7 +23,7 @@
 
 class ClockSetup : public HemisphereApplet {
 public:
-    static constexpr int SLIDEOUT_TIME = 100;
+    static constexpr int SLIDEOUT_TIME = HS::MENU_ANIMATION_TIME;
 
     enum ClockSetupCursor {
         PLAY_STOP,
@@ -111,6 +111,7 @@ public:
         }
 
         if (button_ticker) --button_ticker;
+        if (slide_anim) --slide_anim;
     }
 
     void DrawIndicator() {
@@ -329,7 +330,6 @@ private:
           gfxDottedLine(0, y+1, 127, y+1);
         }
 
-        --slide_anim;
         return;
       }
       /*
