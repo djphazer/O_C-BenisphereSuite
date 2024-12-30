@@ -255,6 +255,8 @@ static constexpr size_t totalsize = total_storage_size();
 static_assert(totalsize < OC::AppData::kAppDataSize, "EEPROM Allocation Exceeded");
 
 void save_app_data() {
+  save_global_settings(); // yeah, why not
+
   SERIAL_PRINTLN("Save app data... (%u bytes available)", OC::AppData::kAppDataSize);
 
   app_settings.used = 0;
@@ -562,7 +564,6 @@ void Ui::AppSettings() {
     FreqMeasure.end();
     OC::DigitalInputs::reInit();
     if (save) {
-      save_global_settings();
       save_app_data();
       // draw message:
       int cnt = 0;
