@@ -93,9 +93,9 @@ public:
             }
             break;
 #ifdef VOR
-          case DAC_A_VOLT_7:
-#else
           case DAC_A_VOLT_6:
+#else
+          case DAC_A_VOLT_5:
 #endif
             if (calibration_state.used_defaults) {
               // copy DAC A to the rest of them, to make life easier
