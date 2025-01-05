@@ -5,10 +5,10 @@ nav_order: 7
 
 # App and Applet Index
 
-Jump to the lists of [Full Screen Apps](App-and-Applet-Index#full-screen-apps) or [Hemisphere Applets](App-and-Applet-Index#hemisphere-applets), also organized [by function](App-and-Applet-Index#apps-and-applets-by-function)
+Jump to the lists of [Full Screen Apps](App-and-Applet-Index.md#full-screen-apps) or [Hemisphere Applets](App-and-Applet-Index#hemisphere-applets), also organized [by function](App-and-Applet-Index.md#apps-and-applets-by-function)
 
 ## Full Screen Apps
-Full screen apps in Phazerville are mostly from the original Ornament and Crime firmware, with a few notable additions ([Calibr8or](Calibr8or), [Scenes](Scenes), and [Passencore](Passencore)). Each of the full screen apps takes advantage of all inputs and outputs in their own way, which is usually configurable.
+Full screen apps in Phazerville are mostly from the original Ornament and Crime firmware, with a few notable additions ([Calibr8or](_apps/Calibr8or.md), [Scenes](_apps/Scenes.md), and [Passencore](_apps/Passencore.md)). Each of the full screen apps takes advantage of all inputs and outputs in their own way, which is usually configurable.
 
 Not all the apps can fit at once on Teensy 3.2 hardware, but you can use the [default set](https://github.com/djphazer/O_C-Phazerville/releases) or [choose your own selection](https://github.com/djphazer/O_C-Phazerville/discussions/38) with a custom build.
 * [Acid Curds](_apps/Acid-Curds.md) - Quad 8-step chord progression sequencer
