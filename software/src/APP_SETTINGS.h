@@ -322,12 +322,13 @@ public:
               int volts = step->index + DAC::kOctaveZero;
               if (step->calibration_type == CALIBRATE_OCTAVE && volts > 0) {
                 int ch = step_to_channel(step->step);
-                uint16_t first = OC::calibration_data.dac.calibrated_octaves[ch][0];
+                uint32_t first = OC::calibration_data.dac.calibrated_octaves[ch][0];
                 uint16_t second = OC::calibration_data.dac.calibrated_octaves[ch][volts];
                 int interval = (second - first) / volts;
 
                 for (int i = 1; i < OCTAVES; ++i) {
                   first += interval;
+                  if (first > 0xFFFF) first = 0xFFFF;
                   OC::calibration_data.dac.calibrated_octaves[ch][i] = first;
                 }
 
