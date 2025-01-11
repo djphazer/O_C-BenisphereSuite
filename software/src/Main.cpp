@@ -43,9 +43,10 @@
 #include "util/util_debugpins.h"
 #include "VBiasManager.h"
 #include "HSMIDI.h"
-#include "PhzConfig.h"
 
 #if defined(__IMXRT1062__)
+#include "PhzConfig.h"
+
 USBHost thisUSB;
 USBHub hub1(thisUSB);
 MIDIDevice usbHostMIDI(thisUSB);
@@ -295,7 +296,10 @@ void FASTRUN loop() {
             Serial.printf("'i' = Toggle App ISR [%s]\n", OC::CORE::app_isr_enabled ? "ON" : "OFF");
             Serial.printf("'d' = Toggle Display Redraw [%s]\n", OC::CORE::display_update_enabled ? "ON" : "OFF");
             Serial.printf("'l' = Toggle App Loop [%s]\n", OC::CORE::app_loop_enabled ? "ON" : "OFF");
+#if defined(__IMXRT1062__)
             Serial.println("'p' = Show Power Cycle Count");
+            Serial.println("'P' = clear/reset Config file");
+#endif
             break;
 
           case 'i':
@@ -311,6 +315,7 @@ void FASTRUN loop() {
             Serial.printf("App Loop = %s\n", OC::CORE::app_loop_enabled ? "ON" : "OFF");
             break;
 
+#if defined(__IMXRT1062__)
           case 'p':
           {
             uint64_t val = 0;
@@ -324,6 +329,7 @@ void FASTRUN loop() {
             PhzConfig::listFiles();
             PhzConfig::load_config();
             break;
+#endif
 
             // TODO:
           case '+':
