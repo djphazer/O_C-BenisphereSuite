@@ -6,8 +6,8 @@ namespace PhzConfig {
     AUDIO_CONFIG,
   };
 
-  typedef uint64_t VALUE;
-  typedef std::unordered_map<uint32_t, uint64_t> ConfigMap;
+  using VALUE = uint64_t;
+  using ConfigMap = std::unordered_map<uint32_t, uint64_t>;
 
   // Forward Decl
   void listFiles();
