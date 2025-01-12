@@ -14,7 +14,6 @@
 
 namespace PhzConfig {
 
-const char * const CONFIG_FILENAME = "PEWPEW.CFG";
 const char * const EEPROM_FILENAME = "EEPROM.DAT";
 
 LittleFS_Program myfs;
@@ -67,7 +66,7 @@ bool getValue(KEY key, VALUE &value)
   return false;
 }
 
-void save_config()
+void save_config(const char* filename)
 {
     Serial.println("\nSaving Config!!!");
 
@@ -78,8 +77,8 @@ void save_config()
     // FILE_WRITE will append data
     // FILE_WRITE_BEGIN will overwrite from 0
     // O_TRUNC to truncate file size to what was written
-    myfs.remove(CONFIG_FILENAME);
-    dataFile = myfs.open(CONFIG_FILENAME, FILE_WRITE_BEGIN);
+    myfs.remove(filename);
+    dataFile = myfs.open(filename, FILE_WRITE_BEGIN);
     if (dataFile) {
       for (auto &i : cfg_store)
       {
@@ -92,26 +91,18 @@ void save_config()
         record_count += 1;
       }
 
-      Serial.printf("bytes written = %u\n", bytes_written);
-      close();
+      Serial.printf("Records written = %d\n", record_count);
+      Serial.printf("Bytes written = %u\n", bytes_written);
+      dataFile.close();
     } else {
-      Serial.printf("error opening %s\n", CONFIG_FILENAME);
+      Serial.printf("error opening %s\n", filename);
     }
 }
 
-void close()
-{
-  Serial.println("\nConfig file closed.");
-  // Closes the data file.
-  dataFile.close();
-  Serial.printf("Records written = %d\n", record_count);
-}
-
-
-void load_config()
+void load_config(const char* filename)
 {
   Serial.println("\nLoading Config!!!");
-  dataFile = myfs.open(CONFIG_FILENAME);
+  dataFile = myfs.open(filename);
 
   uint8_t buf[12];
   size_t pos = 0;
@@ -148,7 +139,7 @@ void load_config()
     }
     dataFile.close();
   } else {
-    Serial.printf("error opening %s\n", CONFIG_FILENAME);
+    Serial.printf("error opening %s\n", filename);
   }
 }
 
@@ -165,7 +156,7 @@ void listFiles()
 void eraseFiles()
 {
   myfs.quickFormat();  // performs a quick format of the created di
-  Serial.println("\nFiles erased !");
+  Serial.println("\nLittleFS quick-format - All files erased !");
 }
 
 void printDirectory(FS &fs) {

@@ -9,10 +9,12 @@ namespace PhzConfig {
   using VALUE = uint64_t;
   using ConfigMap = std::unordered_map<uint32_t, uint64_t>;
 
+  const char * const CONFIG_FILENAME = "PEWPEW.CFG";
+
   // Forward Decl
   void listFiles();
-  void load_config();
-  void save_config();
+  void load_config(const char* filename = CONFIG_FILENAME);
+  void save_config(const char* filename = CONFIG_FILENAME);
   void clear_config();
 
   void setValue(KEY key, VALUE value);
@@ -22,7 +24,6 @@ namespace PhzConfig {
   void printDirectory(File dir, int numSpaces);
   void printSpaces(int num);
   void setup();
-  void close();
   void eraseFiles();
 
 }
