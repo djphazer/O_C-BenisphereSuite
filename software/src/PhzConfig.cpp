@@ -45,10 +45,7 @@ void setup()
 }
 
 void clear_config() {
-  Serial.println("CLEARING CONFIG FILE!!");
   cfg_store.clear();
-  cfg_store[POWER_CYCLE_COUNT] = 0;
-  save_config();
 }
 
 void setValue(KEY key, VALUE value)

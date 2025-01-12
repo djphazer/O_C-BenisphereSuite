@@ -325,7 +325,10 @@ void FASTRUN loop() {
           }
 
           case 'P':
+            Serial.println("CLEARING CONFIG FILE!!");
             PhzConfig::clear_config();
+            PhzConfig::setValue(PhzConfig::POWER_CYCLE_COUNT, 0);
+            PhzConfig::save_config();
             PhzConfig::listFiles();
             PhzConfig::load_config();
             break;

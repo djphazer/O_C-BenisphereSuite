@@ -146,7 +146,6 @@ public:
     }
   }
 
-  // TODO: Rename this and change something else to aux button
   void HandleButtonEvent(const UI::Event& event) {
     if (event.type == UI::EVENT_BUTTON_PRESS) {
       switch (event.control) {
@@ -319,6 +318,25 @@ public:
     }
     peak_conns[side][slot + 1].disconnect();
     peak_conns[side][slot + 1].connect(*stream, side, peaks[side][slot + 1], 0);
+  }
+
+  void LoadPreset(int id) {
+    char filename = "AUDIO00.CFG";
+    filename[5] += (id / 10);
+    filename[6] += id;
+    PhzConfig::load_config(filename);
+
+    // TODO: load and configure applets
+  }
+  void SavePreset(int id) {
+    PhzConfig::clear_config();
+
+    // TODO: store applets and their data
+
+    char filename = "AUDIO00.CFG";
+    filename[5] += (id / 10);
+    filename[6] += id;
+    PhzConfig::save_config(filename);
   }
 
 protected:
