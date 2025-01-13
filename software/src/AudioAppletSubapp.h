@@ -2,6 +2,7 @@
 
 #include "AudioIO.h"
 #include "HSUtils.h"
+#include "PhzConfig.h"
 #include "HemisphereAudioApplet.h"
 #include "OC_ui.h"
 #include "UI/ui_events.h"
@@ -321,7 +322,7 @@ public:
   }
 
   void LoadPreset(int id) {
-    char filename = "AUDIO00.CFG";
+    char filename[] = "AUDIO00.CFG";
     filename[5] += (id / 10);
     filename[6] += id;
     PhzConfig::load_config(filename);
@@ -333,7 +334,7 @@ public:
 
     // TODO: store applets and their data
 
-    char filename = "AUDIO00.CFG";
+    char filename[] = "AUDIO00.CFG";
     filename[5] += (id / 10);
     filename[6] += id;
     PhzConfig::save_config(filename);
