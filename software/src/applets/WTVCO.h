@@ -88,7 +88,7 @@ public:
         if (Changed(1)) wt_pos = Proportion(In(1), 5 * HEMISPHERE_MAX_INPUT_CV / 6, 255); // wavetable morphs over a 5 volt range
 
         InterpolateSample(wt[OUT], phase_acc_msb);
-        Out(0, wt[OUT][phase_acc_msb] * HEMISPHERE_MAX_CV / 255);
+        Out(0, wt[OUT][phase_acc_msb] * HEMISPHERE_MAX_CV / 127);
     }
 
     void View() {
