@@ -14,7 +14,7 @@ namespace PhzConfig {
 
   // Forward Decl
   void listFiles();
-  void load_config(const char* filename = CONFIG_FILENAME);
+  bool load_config(const char* filename = CONFIG_FILENAME);
   void save_config(const char* filename = CONFIG_FILENAME);
   void clear_config();
 

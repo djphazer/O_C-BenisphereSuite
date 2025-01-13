@@ -25,20 +25,18 @@ static constexpr uint32_t diskSize = PROG_FLASH_SIZE;
 
 void setup()
 {
-  // checks that the LittFS program has started with the disk size specified
   if (!myfs.begin(diskSize)) {
     Serial.println("LittleFS unavailable!! Settings WILL NOT BE SAVED!");
-    //while (1) { }
-  } else {
-    Serial.println("LittleFS initialized.");
+    return;
   }
+  Serial.println("LittleFS initialized.");
 
   if (myfs.mediaPresent()) {
     listFiles();
 
     load_config();
 
-    // for testing
+    // convenient for testing and for longevity
     cfg_store[POWER_CYCLE_COUNT] += 1;
     save_config();
   }
@@ -96,48 +94,50 @@ void save_config(const char* filename)
     }
 }
 
-void load_config(const char* filename)
+bool load_config(const char* filename)
 {
   Serial.println("\nLoading Config!!!");
   dataFile = myfs.open(filename);
+  if (!dataFile) {
+    Serial.printf("error opening %s\n", filename);
+    return false;
+  }
 
   uint8_t buf[12];
   size_t pos = 0;
-  if (dataFile) {
-    cfg_store.clear();
+  cfg_store.clear();
 
-    while (dataFile.available()) {
-      uint8_t n = dataFile.read();
-      buf[pos++] = n;
+  while (dataFile.available()) {
+    uint8_t n = dataFile.read();
+    buf[pos++] = n;
 
-      // debug print
-      if (n < 16) Serial.print("0");
-      Serial.print(n, HEX);
+    // debug print
+    if (n < 16) Serial.print("0");
+    Serial.print(n, HEX);
 
-      if (pos >= 12) {
-        cfg_store.insert_or_assign(
-            (uint32_t)buf[0] |
-            (uint32_t)buf[1] << 8 |
-            (uint32_t)buf[2] << 16 |
-            (uint32_t)buf[3] << 24,
+    if (pos >= 12) {
+      cfg_store.insert_or_assign(
+          (uint32_t)buf[0] |
+          (uint32_t)buf[1] << 8 |
+          (uint32_t)buf[2] << 16 |
+          (uint32_t)buf[3] << 24,
 
-            (uint64_t)buf[4] |
-            (uint64_t)buf[5] << 8 |
-            (uint64_t)buf[6] << 16 |
-            (uint64_t)buf[7] << 24 |
-            (uint64_t)buf[8] << 32 |
-            (uint64_t)buf[9] << 40 |
-            (uint64_t)buf[10] << 48 |
-            (uint64_t)buf[11] << 56
-            );
-        pos = 0;
-        Serial.println();
-      }
+          (uint64_t)buf[4] |
+          (uint64_t)buf[5] << 8 |
+          (uint64_t)buf[6] << 16 |
+          (uint64_t)buf[7] << 24 |
+          (uint64_t)buf[8] << 32 |
+          (uint64_t)buf[9] << 40 |
+          (uint64_t)buf[10] << 48 |
+          (uint64_t)buf[11] << 56
+          );
+      pos = 0;
+      Serial.println();
     }
-    dataFile.close();
-  } else {
-    Serial.printf("error opening %s\n", filename);
   }
+
+  dataFile.close();
+  return true;
 }
 
 void listFiles()
@@ -152,7 +152,7 @@ void listFiles()
 
 void eraseFiles()
 {
-  myfs.quickFormat();  // performs a quick format of the created di
+  myfs.quickFormat();
   Serial.println("\nLittleFS quick-format - All files erased !");
 }
 

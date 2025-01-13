@@ -336,7 +336,7 @@ public:
     char filename[] = "AUDIO00.CFG";
     filename[5] += (id / 10);
     filename[6] += id;
-    PhzConfig::load_config(filename);
+    if ( !PhzConfig::load_config(filename) ) return;
 
     int idx = 0;
     uint64_t data = 0;
