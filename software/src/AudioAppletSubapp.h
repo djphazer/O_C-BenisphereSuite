@@ -168,27 +168,32 @@ public:
     }
   }
 
+  void SetupMonoStereo(int c) {
+    if (IsStereo(c)) {
+      get_selected_stereo_applet(c).BaseStart(LEFT_HEMISPHERE);
+      ForEachSide(side) {
+        get_selected_mono_applet(side, c).Unload();
+        ConnectStereoToNext(side, c);
+        if (c > 0) ConnectSlotToNext(side, c - 1);
+      }
+    } else {
+      get_selected_stereo_applet(c).Unload();
+      ForEachSide(side) {
+        get_selected_mono_applet(side, c).BaseStart(side);
+        ConnectMonoToNext(side, c);
+        if (c > 0) ConnectSlotToNext(side, c - 1);
+      }
+    }
+  }
+
   void HandleEncoderButtonEvent(const UI::Event& event) {
     if (event.mask == (OC::CONTROL_BUTTON_L | OC::CONTROL_BUTTON_R)) {
       // check ready_for_press to suppress double events on button combos
       if (cursor[0] == cursor[1] && ready_for_press) {
         int c = cursor[0];
         stereo ^= 1 << c;
-        if (IsStereo(c)) {
-          get_selected_stereo_applet(c).BaseStart(LEFT_HEMISPHERE);
-          ForEachSide(side) {
-            get_selected_mono_applet(side, c).Unload();
-            ConnectStereoToNext(side, c);
-            if (c > 0) ConnectSlotToNext(side, c - 1);
-          }
-        } else {
-          get_selected_stereo_applet(c).Unload();
-          ForEachSide(side) {
-            get_selected_mono_applet(side, c).BaseStart(side);
-            ConnectMonoToNext(side, c);
-            if (c > 0) ConnectSlotToNext(side, c - 1);
-          }
-        }
+
+        SetupMonoStereo(c);
       }
       // Prevent press detection when doing a button combo
       ready_for_press = false;
@@ -335,10 +340,16 @@ public:
 
     int idx = 0;
     uint64_t data = 0;
+    uint64_t oldstereo = stereo;
     PhzConfig::getValue(STEREO_MODE_FLAGS, data);
     stereo = data & 0xFFFFFFFF;
+
     for ( size_t slot = 0; slot < Slots; ++slot ) {
+
       if (IsStereo(slot)) {
+        if (0 == ((oldstereo >> slot) & 1)) {
+          SetupMonoStereo(slot);
+        }
         data = 0;
         //stereo applets
         PhzConfig::getValue(STEREO_APPLETS + slot, data);
@@ -349,6 +360,9 @@ public:
           get_selected_stereo_applet(slot).OnDataReceive(data);
         }
       } else {
+        if ((oldstereo >> slot) & 1) {
+          SetupMonoStereo(slot);
+        }
         //mono applets
         ForEachSide(ch) {
           data = 0;
