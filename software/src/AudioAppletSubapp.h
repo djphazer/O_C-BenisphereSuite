@@ -321,18 +321,69 @@ public:
     peak_conns[side][slot + 1].connect(*stream, side, peaks[side][slot + 1], 0);
   }
 
+  enum AudioConfigKeys : uint32_t {
+    STEREO_MODE_FLAGS = 0,
+    MONO_APPLETS = 1,
+    STEREO_APPLETS = 1 << 8,
+    APPLET_CONFIGS = 1 << 9,
+  };
   void LoadPreset(int id) {
     char filename[] = "AUDIO00.CFG";
     filename[5] += (id / 10);
     filename[6] += id;
     PhzConfig::load_config(filename);
 
-    // TODO: load and configure applets
+    int idx = 0;
+    uint64_t data = 0;
+    PhzConfig::getValue(STEREO_MODE_FLAGS, data);
+    stereo = data & 0xFFFFFFFF;
+    for ( size_t slot = 0; slot < Slots; ++slot ) {
+      if (IsStereo(slot)) {
+        data = 0;
+        //stereo applets
+        PhzConfig::getValue(STEREO_APPLETS + slot, data);
+        ChangeStereoApplet(LEFT_HEMISPHERE, slot, (int)data);
+
+        if (data) {
+          PhzConfig::getValue(STEREO_APPLETS + APPLET_CONFIGS + slot, data);
+          get_selected_stereo_applet(slot).OnDataReceive(data);
+        }
+      } else {
+        //mono applets
+        ForEachSide(ch) {
+          data = 0;
+          PhzConfig::getValue(MONO_APPLETS + slot + ch * Slots, data);
+          ChangeMonoApplet(ch, slot, (int)data);
+
+          if (data) {
+            PhzConfig::getValue(APPLET_CONFIGS + slot + ch * Slots, data);
+            get_selected_mono_applet(ch, slot).OnDataReceive(data);
+          }
+        }
+      }
+    }
+
   }
   void SavePreset(int id) {
     PhzConfig::clear_config();
 
-    // TODO: store applets and their data
+    PhzConfig::setValue(STEREO_MODE_FLAGS, (uint64_t)stereo); // bitset
+    int idx = 0;
+    ForEachSide(ch) {
+      for ( size_t slot = 0; slot < Slots; ++slot ) {
+          idx = selected_mono_applets[ch][slot];
+          PhzConfig::setValue(MONO_APPLETS + slot + ch * Slots, idx);
+          PhzConfig::setValue(APPLET_CONFIGS + slot + ch * Slots,
+              get_selected_mono_applet(ch, slot).OnDataRequest());
+
+          if (0 == ch) {
+            idx = selected_stereo_applets[slot];
+            PhzConfig::setValue(STEREO_APPLETS + slot, idx);
+            PhzConfig::setValue(STEREO_APPLETS + APPLET_CONFIGS + slot,
+                get_selected_stereo_applet(slot).OnDataRequest());
+          }
+      }
+    }
 
     char filename[] = "AUDIO00.CFG";
     filename[5] += (id / 10);

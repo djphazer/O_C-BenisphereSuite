@@ -1,11 +1,12 @@
 #include <unordered_map>
 
 namespace PhzConfig {
-  enum KEY : uint32_t {
+  enum ConfigKeys : uint32_t {
     POWER_CYCLE_COUNT,
     AUDIO_CONFIG,
   };
 
+  using KEY = uint32_t;
   using VALUE = uint64_t;
   using ConfigMap = std::unordered_map<uint32_t, uint64_t>;
 
