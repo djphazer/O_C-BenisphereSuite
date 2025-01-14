@@ -138,6 +138,9 @@ void setup() {
   }
   #endif
 
+  // LittleFS config files
+  PhzConfig::setup();
+
   // USB Host support for both 4.0 and 4.1
   usbHostMIDI.begin();
 #endif

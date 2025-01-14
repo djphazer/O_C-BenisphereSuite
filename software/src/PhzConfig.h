@@ -1,14 +1,14 @@
 #include <unordered_map>
 
 namespace PhzConfig {
-  enum ConfigKeys : uint32_t {
+  enum ConfigKeys : uint16_t {
     POWER_CYCLE_COUNT,
     AUDIO_CONFIG,
   };
 
-  using KEY = uint32_t;
+  using KEY = uint16_t;
   using VALUE = uint64_t;
-  using ConfigMap = std::unordered_map<uint32_t, uint64_t>;
+  using ConfigMap = std::unordered_map<KEY, VALUE>;
 
   const char * const CONFIG_FILENAME = "PEWPEW.CFG";
 

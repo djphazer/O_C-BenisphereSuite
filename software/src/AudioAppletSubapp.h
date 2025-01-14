@@ -326,7 +326,7 @@ public:
     peak_conns[side][slot + 1].connect(*stream, side, peaks[side][slot + 1], 0);
   }
 
-  enum AudioConfigKeys : uint32_t {
+  enum AudioConfigKeys : uint16_t {
     STEREO_MODE_FLAGS = 0,
     MONO_APPLETS = 1,
     STEREO_APPLETS = 1 << 8,

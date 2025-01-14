@@ -26,7 +26,6 @@ namespace OC {
 
     void Init() {
       AudioMemory(AUDIO_MEMORY);
-      PhzConfig::setup();
     }
 
   }

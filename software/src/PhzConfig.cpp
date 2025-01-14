@@ -115,21 +115,20 @@ bool load_config(const char* filename)
     if (n < 16) Serial.print("0");
     Serial.print(n, HEX);
 
-    if (pos >= 12) {
+    static_assert(sizeof(KEY) + sizeof(VALUE) == 10, "config data size mismatch");
+    if (pos >= 10) {
       cfg_store.insert_or_assign(
           (uint32_t)buf[0] |
-          (uint32_t)buf[1] << 8 |
-          (uint32_t)buf[2] << 16 |
-          (uint32_t)buf[3] << 24,
+          (uint32_t)buf[1] << 8,
 
-          (uint64_t)buf[4] |
-          (uint64_t)buf[5] << 8 |
-          (uint64_t)buf[6] << 16 |
-          (uint64_t)buf[7] << 24 |
-          (uint64_t)buf[8] << 32 |
-          (uint64_t)buf[9] << 40 |
-          (uint64_t)buf[10] << 48 |
-          (uint64_t)buf[11] << 56
+          (uint64_t)buf[2] |
+          (uint64_t)buf[3] << 8 |
+          (uint64_t)buf[4] << 16 |
+          (uint64_t)buf[5] << 24 |
+          (uint64_t)buf[6] << 32 |
+          (uint64_t)buf[7] << 40 |
+          (uint64_t)buf[8] << 48 |
+          (uint64_t)buf[9] << 56
           );
       pos = 0;
       Serial.println();
