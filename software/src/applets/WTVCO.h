@@ -34,13 +34,13 @@ public:
 
     static constexpr size_t WT_SIZE = 256;
 
-    enum WTVCO_Cursor {
+    enum Wave_Cursor {
         WAVEFORM_OUT,
         WAVEFORM_A,
         WAVEFORM_B,
         WAVEFORM_C,
 
-        LAST_SETTING = WAVEFORM_C
+        WAVEFORM_LAST = WAVEFORM_C
     };
 
     enum WaveTables { A, B, C, OUT };
@@ -65,6 +65,16 @@ public:
 
     };
 
+    enum Param_Cursor {
+        PARAM_VIEW_WT,
+        PARAM_PITCH,
+        PARAM_WT_POS,
+        PARAM_ATTEN,
+        PARAM_FREQ_DIV,
+
+        PARAM_LAST = PARAM_FREQ_DIV
+    };
+
     const char* applet_name() {
         return "WTVCO";
     }
@@ -81,43 +91,80 @@ public:
         if (Clock(1)) pitch_range_shift = constrain(pitch_range_shift + 1, 0, 8);
 
         if (Changed(0)) pitch = In(0);
-        phase_inc = ComputePhaseIncrement(pitch);
-        phase += phase_inc;
-        uint8_t phase_acc_msb = (uint8_t)(phase >> (24 - pitch_range_shift));
-
         if (Changed(1)) wt_pos = Proportion(In(1), 5 * HEMISPHERE_MAX_INPUT_CV / 6, 255); // wavetable morphs over a 5 volt range
 
+        phase_inc = ComputePhaseIncrement(pitch);
+        if (++inc_count > freq_div) {
+            phase += phase_inc;
+            inc_count = 0;
+        }
+
+        uint8_t phase_acc_msb = (uint8_t)(phase >> (24 - pitch_range_shift));
+        InterpolateSample(wt[OUT], (wave_ui_element != phase_acc_msb) ? wave_ui_element++ : ++wave_ui_element); // gurantee ui update even at low freq
         InterpolateSample(wt[OUT], phase_acc_msb);
-        Out(0, wt[OUT][phase_acc_msb] * HEMISPHERE_MAX_CV / 127);
+        Out(0, attenuation * (wt[OUT][phase_acc_msb] * HEMISPHERE_MAX_CV / 127) / 127);
     }
 
     void View() {
-        DrawInterface();
         DrawSelector();
-        DrawWaveForm();
+        if (page2) DrawParams();
+        else {
+            DrawWaveMenu();
+            DrawWaveForm();
+        }
+    }
+
+    void OnButtonPress() {
+        if ((Wave_Cursor)cursor == WAVEFORM_OUT
+        || (Param_Cursor)cursor == PARAM_VIEW_WT) page2 = !page2;
+        else CursorToggle();
     }
 
     void OnEncoderMove(int direction) {
-        if (!EditMode()) {
-            MoveCursor(cursor, direction, LAST_SETTING);
-            return;
+        if (!page2) {
+            if (!EditMode()) {
+                MoveCursor(cursor, direction, WAVEFORM_LAST);
+                return;
+            }
+            switch((Wave_Cursor)cursor) {
+                case WAVEFORM_A:
+                    waveform[A] = (WaveForms) constrain(((int)waveform[A]) + direction, 0, WAVEFORM_COUNT-1);
+                    GenerateWaveTable(A);
+                    break;
+                case WAVEFORM_B:
+                    waveform[B] = (WaveForms) constrain(((int)waveform[B]) + direction, 0, WAVEFORM_COUNT-1);
+                    GenerateWaveTable(B);
+                    break;
+                case WAVEFORM_C:
+                    waveform[C] = (WaveForms) constrain(((int)waveform[C]) + direction, 0, WAVEFORM_COUNT-1);
+                    GenerateWaveTable(C);
+                    break;
+                case WAVEFORM_OUT:
+                default: break;
+            }
         }
 
-        switch((WTVCO_Cursor)cursor) {
-            case WAVEFORM_A:
-                waveform[A] = (WaveForms) constrain(((int)waveform[A]) + direction, 0, WAVEFORM_COUNT-1);
-                GenerateWaveTable(A);
-                break;
-            case WAVEFORM_B:
-                waveform[B] = (WaveForms) constrain(((int)waveform[B]) + direction, 0, WAVEFORM_COUNT-1);
-                GenerateWaveTable(B);
-                break;
-            case WAVEFORM_C:
-                waveform[C] = (WaveForms) constrain(((int)waveform[C]) + direction, 0, WAVEFORM_COUNT-1);
-                GenerateWaveTable(C);
-                break;
-            case WAVEFORM_OUT:
-            default: break;
+        else {
+            if (!EditMode()) {
+                MoveCursor(cursor, direction, PARAM_LAST);
+                return;
+            }
+            switch((Param_Cursor)cursor) {
+                case PARAM_PITCH:
+                    base_pitch = constrain(base_pitch + (direction * 128), 0, 8000000);
+                    break;
+                case PARAM_WT_POS:
+                    wt_pos = constrain(wt_pos + direction, 0, 255);
+                    break;
+                case PARAM_ATTEN:
+                    attenuation = constrain(attenuation + direction, 0, 127);
+                    break;
+                case PARAM_FREQ_DIV:
+                    freq_div = constrain(freq_div + direction, 0, 32);
+                    break;
+                case PARAM_VIEW_WT:
+                default: break;
+            }
         }
     }
 
@@ -143,7 +190,9 @@ protected:
 
 private:
     int cursor = 0; // WTVCO_Cursor
+    bool page2 = false;
 
+    int base_pitch = 440 * 128 * 12;
     int16_t pitch = 0;
     uint32_t phase_inc = 0;
     uint32_t phase;
@@ -152,12 +201,22 @@ private:
     WaveForms waveform[3];
     std::array<int8_t, WT_SIZE> wt[4];
     int wt_pos = 0;
+    uint8_t pulse_duty = 127;
+
+    uint8_t wave_ui_element = 0;
+
+    uint8_t attenuation = 101;
+
+    // count each time the phase increments for dividing frequency
+    uint8_t inc_count = 0;
+    uint8_t freq_div = 0;
 
 
 // GRAPHIC STUFF:
     static constexpr int HEADER_HEIGHT = 11;
     static constexpr int X_DIV = 64 / 4;
     static constexpr int MENU_ROW = 14;
+    static constexpr int Y_DIV = (64 - HEADER_HEIGHT) / 4;
 
     void gfxRenderWave(int w) {
         for (size_t x = 0; x < WT_SIZE; x+=4) {
@@ -166,12 +225,12 @@ private:
         }
     }
 
-    void DrawInterface() {
+    void DrawWaveMenu() {
         int x = 3;
         int y = MENU_ROW;
 
         if (!EditMode()
-        || (WTVCO_Cursor)cursor == WAVEFORM_OUT) {
+        || (Wave_Cursor)cursor == WAVEFORM_OUT) {
             gfxBitmap(x+1, y, 8, WAVEFORM_ICON);
             x += X_DIV;
             gfxPrint(x+2, y, "A");
@@ -181,7 +240,7 @@ private:
             gfxPrint(x+2, y, "C");
 
         } else {
-            switch((WTVCO_Cursor)cursor) {
+            switch((Wave_Cursor)cursor) {
                 case WAVEFORM_A:
                     gfxPrint(3, MENU_ROW, "A:");
                     gfxPrint(wavetable_names[waveform[A]]);
@@ -198,18 +257,37 @@ private:
             }
         }
 
-        gfxLine(0, y+11, 63, y+11);
+        gfxLine(0, (y + 11), 63, (y + 11));
         gfxLine(0, 63, 63, 63);
     }
 
     void DrawSelector() {
-        if(!EditMode()) {
-            gfxSpicyCursor((cursor * X_DIV), 23, X_DIV);
+        if (!page2) {
+            if(!EditMode()) {
+                gfxSpicyCursor((cursor * X_DIV), HEADER_HEIGHT + 13, X_DIV);
+            }
+        } else {
+            if(!EditMode()) {
+                gfxSpicyCursor(31, HEADER_HEIGHT + (cursor * Y_DIV), 32);
+            }
         }
     }
 
+    void DrawParams() {
+        int y = 2;
+        gfxPrint((hemisphere) ? 0 : (63 - 19), y, "[X]");
+        y += Y_DIV;
+        gfxPrint(1, y, pitch); // "Pitch:"); gfxPrint(base_pitch / 1000);
+        y += Y_DIV;
+        gfxPrint(1, y, "Blend:"); gfxPrint(wt_pos);
+        y += Y_DIV;
+        gfxPrint(1, y, "Atten:"); gfxPrint(attenuation);
+        y += Y_DIV;
+        gfxPrint(1, y, "FqDiv:"); gfxPrint(freq_div);
+    }
+
     void DrawWaveForm() {
-        switch((WTVCO_Cursor)cursor) {
+        switch((Wave_Cursor)cursor) {
             case WAVEFORM_OUT:
                 gfxRenderWave(OUT);
                 break;
@@ -281,68 +359,17 @@ private:
 
     void GenerateWaveForm_Sawtooth(std::array<int8_t, WT_SIZE>& waveform) {
         for (size_t i = 0; i < WT_SIZE; ++i) {
-            float t = static_cast<float>(i) / WT_SIZE;
-            waveform[i] = static_cast<int8_t>(255 - (255 * (t - 0.5)));
+            int16_t value = ((WT_SIZE - i - 1) * 256) / WT_SIZE;
+            waveform[i] = (int8_t)(value - 128);
         }
     }
 
     void GenerateWaveForm_Ramp(std::array<int8_t, WT_SIZE>& waveform) {
         for (size_t i = 0; i < WT_SIZE; ++i) {
-            float t = static_cast<float>(i) / WT_SIZE;
-            waveform[i] = static_cast<int8_t>(255 * (t - 0.5));
+            int16_t value = (i * 256) / WT_SIZE;
+            waveform[i] = (int8_t)(value - 128);
         }
     }
-
-
-
-// q15 math
-//     void GenerateWaveForm_Sine(std::array<int8_t, WT_SIZE>& waveform) {
-//         for (size_t i = 0; i < WT_SIZE; ++i) {
-//             q15_t t = static_cast<q15_t>(i * 32767 / WT_SIZE);
-//             waveform[WT_SIZE-i-1] = arm_sin_q15(t) >> 8;
-//         }
-//     }
-
-// void GenerateWaveForm_Triangle(std::array<int8_t, WT_SIZE>& waveform) {
-//     for (size_t i = 0; i < WT_SIZE; ++i) {
-//         q15_t t = static_cast<q15_t>((((int32_t)i << 15) / WT_SIZE) + (1 << 13)); // Fixed-point equivalent of (i / WT_SIZE + 0.25)
-//         t &= 0x7FFF; // Wrap to [0, 1) in Q15 format
-//         q15_t value = abs((t << 1) - 0x7FFF) - 0x7FFF; // Fixed-point equivalent of 4 * fabs(t - 0.5) - 1
-//         waveform[WT_SIZE-i-1] = (int8_t)(value >> 8); // Scale down to 8-bit signed
-//     }
-// }
-
-// void GenerateWaveForm_Triangle(std::array<int8_t, WT_SIZE>& waveform) { // half amplitude, half period
-//     for (size_t i = 0; i < WT_SIZE; ++i) {
-//         q15_t t = (q15_t)((i << 15) / WT_SIZE); // Calculate t in Q15 format as (i / WT_SIZE)
-//         q15_t value = (t < 0x4000) ? (t << 1) : ((0x7FFF - t) << 1); // Calculate triangle waveform value in Q15
-//         waveform[WT_SIZE-i-1] = (int8_t)(value >> 8); // Convert to 8-bit signed and assign
-//     }
-// }
-
-// void GenerateWaveForm_Square(std::array<int8_t, WT_SIZE>& waveform) {
-//     for (size_t i = 0; i < WT_SIZE; ++i) {
-//         waveform[WT_SIZE-i-1] = (i < WT_SIZE / 2) ? 127 : -128;
-//     }
-// }
-
-// void GenerateWaveForm_Sawtooth(std::array<int8_t, WT_SIZE>& waveform) {
-//     for (size_t i = 0; i < WT_SIZE; ++i) {
-//         q15_t t = (q15_t)((i << 15) / WT_SIZE); // Fixed-point equivalent of i / WT_SIZE
-//         q15_t value = 0x7FFF - t; // Fixed-point equivalent of 1 - t
-//         waveform[WT_SIZE-i-1] = (int8_t)(value >> 8); // Scale down to 8-bit signed
-//     }
-// }
-
-// void GenerateWaveForm_Ramp(std::array<int8_t, WT_SIZE>& waveform) {
-//     for (size_t i = 0; i < WT_SIZE; ++i) {
-//         q15_t t = (q15_t)((i << 15) / WT_SIZE); // Fixed-point equivalent of i / WT_SIZE
-//         q15_t value = t - 0x4000; // Fixed-point equivalent of t - 0.5
-//         waveform[WT_SIZE-i-1] = (int8_t)(value >> 8); // Scale down to 8-bit signed
-//     }
-// }
-
-
 
 
 
