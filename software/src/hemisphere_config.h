@@ -30,6 +30,7 @@
 #include "applets/Carpeggio.h"
 #include "applets/Chordinator.h"
 #include "applets/ClockDivider.h"
+#include "applets/ClkToGate.h"
 #ifdef ARDUINO_TEENSY41
 #include "applets/ClockSetupT4.h"
 #else
@@ -140,6 +141,7 @@ AppletRegistry reg{
     DeclareApplet<Carpeggio>{32, 0x0a},
     DeclareApplet<Chordinator>{64, 0x08},
     DeclareApplet<ClockDivider>{6, 0x04},
+    DeclareApplet<ClkToGate>{78, 0x04},
     DeclareApplet<ClockSkip>{28, 0x04},
     DeclareApplet<Compare>{30, 0x10},
     DeclareApplet<Cumulus>{74, 0x40},
@@ -205,7 +207,6 @@ namespace HS {
   static constexpr auto & available_applets = reg.applets;
   static constexpr int HEMISPHERE_AVAILABLE_APPLETS = ARRAY_SIZE(available_applets);
 
-  // TODO: figure out where to store this
   uint64_t hidden_applets[2] = { 0, 0 };
   bool applet_is_hidden(const int& index) {
     return (hidden_applets[index/64] >> (index%64)) & 1;
