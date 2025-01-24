@@ -71,7 +71,7 @@ static uint8_t SH1106_init_seq[] = {
   0x040,          /* start line */
 
   // Charge pump setting - only for SSD1306
-  //0x8d, 0x14,   /* [2] charge pump setting (p62): 0x014 enable, 0x010 disable */
+  0x8d, 0x14,   /* [2] charge pump setting (p62): 0x014 enable, 0x010 disable */
 
   0x020, 0x002,   /* Memory addressing mode: 0x00 horiz, 0x01 vert, 0x02 page */
 #ifdef FLIP_180
@@ -97,9 +97,9 @@ static uint8_t SH1106_init_seq[] = {
 };
 
 // indexes to above sequence
-static constexpr int CONTRAST_VALUE = 15;
-static constexpr int FLIP_CMD_A = 10;
-static constexpr int FLIP_CMD_B = 11;
+static constexpr int CONTRAST_VALUE = 17;
+static constexpr int FLIP_CMD_A = 12;
+static constexpr int FLIP_CMD_B = 13;
 
 static uint8_t SH1106_display_on_seq[] = {
   0xaf
