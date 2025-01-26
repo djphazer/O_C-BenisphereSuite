@@ -138,7 +138,10 @@ public:
         uint8_t phase_acc_msb = (uint8_t)(phase >> (24 - pitch_range_shift));
 
         InterpolateSample(wavetable[OUT], (wt_sample != phase_acc_msb) ? wt_sample++ : ++wt_sample); // gurantee ui update even at low freq
-        for (int w = A; w <= C; ++w) { if (waveform[w] == WAVE_PULSE) UpdatePulseDuty(wavetable[w], wt_sample, param.pulse_duty); } //
+        for (int w = A; w <= C; ++w) {
+            if (waveform[w] == WAVE_PULSE) UpdatePulseDuty(wavetable[w], wt_sample, param.pulse_duty);
+            if (waveform[w] == WAVE_NOISE) UpdateNoiseSample(wavetable[w], wt_sample);
+        }
         InterpolateSample(wavetable[OUT], phase_acc_msb);
 
         Out(0, param.attenuation * (wavetable[OUT][phase_acc_msb] * HEMISPHERE_MAX_CV / 127) / 127);
@@ -445,6 +448,10 @@ private:
 
     void UpdatePulseDuty(std::array<int8_t, WT_SIZE>& wt, uint8_t sample, uint8_t duty) {
         wt[sample] = (sample < duty) ? 127 : -128;
+    }
+
+    void UpdateNoiseSample(std::array<int8_t, WT_SIZE>& wt, uint8_t sample) {
+        wt[sample] = static_cast<int8_t>(random(-128, 127));
     }
 
     void GenerateWaveTable(int w) {
