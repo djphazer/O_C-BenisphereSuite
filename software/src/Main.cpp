@@ -51,6 +51,9 @@ USBHost thisUSB;
 USBHub hub1(thisUSB);
 MIDIDevice usbHostMIDI(thisUSB);
 
+#if defined(ARDUINO_TEENSY40)
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI1);
+#endif
 #if defined(ARDUINO_TEENSY41)
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI1);
 #include "AudioIO.h"
@@ -136,6 +139,9 @@ void setup() {
   if (I2S2_Audio_ADC && I2S2_Audio_DAC) {
     OC::AudioIO::Init();
   }
+  #else
+    Serial6.begin(31250);
+    MIDI1.begin(MIDI_CHANNEL_OMNI);
   #endif
 
   // LittleFS config files

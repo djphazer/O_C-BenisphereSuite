@@ -272,9 +272,7 @@ public:
             usbMIDI.sendRealTime(usbMIDI.Start);
 #if defined(__IMXRT1062__)
             usbHostMIDI.sendRealTime(usbMIDI.Start);
-#ifdef ARDUINO_TEENSY41
             MIDI1.sendRealTime(midi::MidiType(usbMIDI.Start));
-#endif
 #endif
         }
     }
@@ -287,9 +285,7 @@ public:
             usbMIDI.sendRealTime(usbMIDI.Stop);
 #if defined(__IMXRT1062__)
             usbHostMIDI.sendRealTime(usbMIDI.Stop);
-#ifdef ARDUINO_TEENSY41
             MIDI1.sendRealTime(midi::MidiType(usbMIDI.Stop));
-#endif
 #endif
         }
     }

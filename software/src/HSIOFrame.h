@@ -615,14 +615,14 @@ typedef struct IOFrame {
 
         void SendAfterTouch(const uint8_t midi_ch, uint8_t val) {
             usbMIDI.sendAfterTouch(val, midi_ch + 1);
-#ifdef ARDUINO_TEENSY41
+#ifdef __IMXRT1062__
             usbHostMIDI.sendAfterTouch(val, midi_ch + 1);
             MIDI1.sendAfterTouch(val, midi_ch + 1);
 #endif
         }
         void SendPitchBend(const uint8_t midi_ch, uint16_t bend) {
             usbMIDI.sendPitchBend(bend, midi_ch + 1);
-#ifdef ARDUINO_TEENSY41
+#ifdef __IMXRT1062__
             usbHostMIDI.sendPitchBend(bend, midi_ch + 1);
             MIDI1.sendPitchBend(bend, midi_ch + 1);
 #endif
@@ -630,7 +630,7 @@ typedef struct IOFrame {
 
         void SendCC(const uint8_t midi_ch, uint8_t ccnum, uint8_t val) {
             usbMIDI.sendControlChange(ccnum, val, midi_ch + 1);
-#ifdef ARDUINO_TEENSY41
+#ifdef __IMXRT1062__
             usbHostMIDI.sendControlChange(ccnum, val, midi_ch + 1);
             MIDI1.sendControlChange(ccnum, val, midi_ch + 1);
 #endif
@@ -640,7 +640,7 @@ typedef struct IOFrame {
             else current_note[midi_ch] = note;
 
             usbMIDI.sendNoteOn(note, vel, midi_ch + 1);
-#ifdef ARDUINO_TEENSY41
+#ifdef __IMXRT1062__
             usbHostMIDI.sendNoteOn(note, vel, midi_ch + 1);
             MIDI1.sendNoteOn(note, vel, midi_ch + 1);
 #endif
@@ -648,7 +648,7 @@ typedef struct IOFrame {
         void SendNoteOff(const uint8_t midi_ch, uint8_t note = 255, uint8_t vel = 0) {
             if (note > 127) note = current_note[midi_ch];
             usbMIDI.sendNoteOff(note, vel, midi_ch + 1);
-#ifdef ARDUINO_TEENSY41
+#ifdef __IMXRT1062__
             usbHostMIDI.sendNoteOff(note, vel, midi_ch + 1);
             MIDI1.sendNoteOff(note, vel, midi_ch + 1);
 #endif
