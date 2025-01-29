@@ -68,7 +68,7 @@ public:
     static const char* help[HELP_LABEL_COUNT];
 
     virtual const char* applet_name() = 0; // Maximum of 9 characters
-    virtual const uint8_t* applet_icon() { return nullptr; }
+    virtual const uint8_t* applet_icon() { return ZAP_ICON; }
     const char* const OutputLabel(int ch) {
       return OC::Strings::capital_letters[ch + io_offset];
     }
