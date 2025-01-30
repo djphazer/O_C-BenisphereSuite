@@ -1836,15 +1836,12 @@ public:
    num_enabled_settings_ = settings - enabled_settings_;
   }
 
-  template <DAC_CHANNEL &dacChannel>
-  void update_main_channel() {
+  void update_main_channel(DAC_CHANNEL &dacChannel) {
     int32_t _output = OC::DAC::pitch_to_scaled_voltage_dac(dacChannel, get_step_pitch(), 0, OC::DAC::get_voltage_scaling(dacChannel));
-    OC::DAC::set<dacChannel>(_output);
-
+    OC::DAC::set(dacChannel, _output);
   }
 
-  template <DAC_CHANNEL &dacChannel>
-  void update_aux_channel()
+  void update_aux_channel(DAC_CHANNEL &dacChannel)
   {
 
       int8_t _mode = get_aux_mode();
@@ -1880,7 +1877,7 @@ public:
         default:
         break;
       }
-      OC::DAC::set<dacChannel>(_output);
+      OC::DAC::set(dacChannel, _output);
   }
 
   void RenderScreensaver() const;
@@ -2147,11 +2144,11 @@ void SEQ_isr() {
   seq_channel[0].Update(triggers, DAC_CHANNEL_A);
   seq_channel[1].Update(triggers, DAC_CHANNEL_B);
   // update DAC channels A, B:
-  seq_channel[0].update_main_channel<DAC_CHANNEL_A>();
-  seq_channel[1].update_main_channel<DAC_CHANNEL_B>();
+  seq_channel[0].update_main_channel(DAC_CHANNEL_A);
+  seq_channel[1].update_main_channel(DAC_CHANNEL_B);
   // update DAC channels C, D:
-  seq_channel[0].update_aux_channel<DAC_CHANNEL_C>();
-  seq_channel[1].update_aux_channel<DAC_CHANNEL_D>();
+  seq_channel[0].update_aux_channel(DAC_CHANNEL_C);
+  seq_channel[1].update_aux_channel(DAC_CHANNEL_D);
 }
 
 void SEQ_handleButtonEvent(const UI::Event &event) {
