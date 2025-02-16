@@ -1,5 +1,5 @@
 #include "../tideslite.h"
-#include "util/util_phase_extractor.h"
+#include "../util/util_phase_extractor.h"
 
 class EbbAndLfo : public HemisphereApplet {
 public:
